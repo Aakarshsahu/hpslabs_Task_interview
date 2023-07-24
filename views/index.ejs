@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <style>
+
+    </style>
+  </head>
+  <body>
+
+    <nav class="nav">
+      
+      <p>Groups</p>
+      <a href="/profile"><p>Profile</p></a>
+      <p>Login</p>
+      <p>Logout</p>
+      <p id="username"></p>
+      <p>Users : <span id="online"></span></p>
+    </nav>
+
+  
+
+    <div id="fixedobject" style="top: 0; left: 0; height: 100vh; width: 100vw; background-color: rgba(0, 0, 0, 0.522); display: flex; align-items: center;justify-content: center; position: fixed;">
+      <div style="width: 300px; height: 200px; background: white; display: flex;flex-direction: column;">
+        <textarea name="" id="user" style="width: 100%;"></textarea>
+        <button style="width: 100%; background-color: royalblue;" id="setname">set name</button>
+      </div>
+    </div>
+    <div class="top">
+    <div class="left"></div>
+
+    <div class="right">
+    <div class="main">
+      
+      <div id="msg"></div>
+      <textarea name="" id="msgtext" ></textarea>
+      <button id="submit" >send massage</button>
+    </div>
+
+    
+    <div id="users"></div>
+
+  </div>
+</div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js" integrity="sha512-xbQU0+iHqhVt7VIXi6vBJKPh3IQBF5B84sSHdjKiSccyX/1ZI7Vnkt2/8y8uruj63/DVmCxfUNohPNruthTEQA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    
+    <script>
+      var socket = io();
+      document.querySelector("#submit")
+      .addEventListener("click",function(){
+        var data = document.querySelector("#msgtext").value;
+        var user = document.querySelector("#user").value;
+        var username = document.querySelector("#username");
+
+        
+        if(data.trim().length > 0 ){
+          socket.emit("msg", {data : data , user : user});
+        document.querySelector("#msgtext").value = '';
+        }
+        
+      })
+      socket.on("msg",function(data){
+        console.log(data)
+        var div = document.createElement("div");
+        div.classList.add("msg");
+        div.textContent = `${data.user}:${data.data}`;
+        document.querySelector("#msg").appendChild(div);
+
+
+        
+      })
+
+      //code for istyping feature (with the help of brodcast of soket io)
+      var data = document.querySelector("textarea");
+      data.addEventListener("input",function(){
+        socket.broadcast.emit("typing");
+        if(socket.broadcast.on){
+
+        }
+      })
+
+      //code for show the user on client side
+      document.querySelector("#setname").addEventListener("click",function(){
+        // var user = document.querySelector("#user")
+        var user = document.querySelector("#user").value;
+        if (user.trim().length >0) {
+          document.querySelector("#fixedobject").style.display="none"
+          socket.emit("username", user);
+        }
+      })
+
+      socket.on("username",function(username){
+            var div = document.createElement("div");
+          div.classList.add("username");
+          div.textContent = username;
+          document.querySelector("#username").appendChild(div);
+          })
+       socket.on("online",function(data){
+        document.querySelector("#online").textContent = data
+       })
+
+
+       
+
+    </script>
+  </body>
+</html>
